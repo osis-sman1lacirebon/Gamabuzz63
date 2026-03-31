@@ -7,7 +7,7 @@
 
   // ============= ANGKA RANDOM =============
   function randomNumber() {
-    return Math.floor(Math.random() * 500) + 1;
+    return Math.floor(Math.random() * 0620) + 1;
   }
 
   function randomColor() {
@@ -18,7 +18,7 @@
   function spin() {
     btn.disabled = true;
 
-    let duration = 4000;
+    let duration = 4500;
     let start = Date.now();
 
     function animate() {
@@ -26,7 +26,7 @@
       let progress = elapsed / duration;
 
       let easeOut = 1 - Math.pow(1 - progress, 4);
-      let delay = 20 + (easeOut * 200);
+      let delay = 30 + (easeOut * 300);
 
       numberEl.innerText = String(randomNumber()).padStart(3, '0');
 
