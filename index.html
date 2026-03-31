@@ -1,17 +1,197 @@
 <!DOCTYPE html>
 <html lang="id">
-  <head>
-  <meta charset="UTF-8">
-  <title>Gamabuzz 63</title>
-  <link rel="stylesheet" type="text/css" href="Assets/style.css">
-  </head>
+<head>
+<meta charset="UTF-8">
+<title>Gamafest 63</title>
+<style>
+  body {
+    font-family: Arial;
+    text-align: center;
+    background: #111;
+    color: white;
+    margin-top: 80px;
+    transition: background 0.2s;
+  }
 
-  <body>
-    <canvas id="confetti"></canvas>
-    <h1>UNDIAN DOORPRIZE JALAN SANTAI</h1>
-    <div id="number">-</div>
-    <button onclick="spin()" id="btn">Acak</button>
-    <audio id="tick" src="https://www.soundjay.com/mechanical/sounds/click-07.mp3"></audio>
-    <script src="Assets/script.js"></script>
-  </body>
-  </html>
+  #number {
+    font-size: 100px;
+    font-weight: bold;
+    transition: transform 0.1s, color 0.2s;
+  }
+
+  button {
+    margin-top: 30px;
+    padding: 12px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    background: #00c853;
+    color: white;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    background: gray;
+  }
+
+  #confetti {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+</style>
+</head>
+
+<body>
+
+<canvas id="confetti"></canvas>
+
+<h1>🎯 Random 0001 - 0620</h1>
+<div id="number">0000</div>
+<button onclick="spin()" id="btn">Acak</button>
+
+<!-- sound -->
+<audio id="tick" src="https://www.soundjay.com/mechanical/sounds/click-07.mp3"></audio>
+<audio id="win" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+<audio id="boom" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
+
+<script>
+const numberEl = document.getElementById("number");
+const btn = document.getElementById("btn");
+
+const tick = document.getElementById("tick");
+const win = document.getElementById("win");
+const boom = document.getElementById("boom");
+
+const colors = ["#ff5252","#ff9800","#ffeb3b","#4caf50","#2196f3","#3f51b5","#9c27b0"];
+
+// ================= FORMAT =================
+function formatNumber(num) {
+  return String(num).padStart(4, '0');
+}
+
+// ================= RANDOM =================
+function randomNumber() {
+  return Math.floor(Math.random() * 620) + 1;
+}
+
+function randomColor() {
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// ================= SPIN =================
+function spin() {
+  btn.disabled = true;
+
+  let duration = 4500;
+  let start = Date.now();
+
+  function animate() {
+    let elapsed = Date.now() - start;
+    let progress = elapsed / duration;
+
+    let easeOut = 1 - Math.pow(1 - progress, 4);
+    let delay = 20 + (easeOut * 220);
+
+    numberEl.innerText = formatNumber(randomNumber());
+
+    numberEl.style.color = randomColor();
+    numberEl.style.transform = "scale(1.3)";
+    setTimeout(() => numberEl.style.transform = "scale(1)", 80);
+
+    tick.currentTime = 0;
+    tick.play();
+
+    if (progress < 1) {
+      setTimeout(animate, delay);
+    } else {
+      setTimeout(() => finish(), 400);
+    }
+  }
+
+  animate();
+}
+
+// ================= HASIL =================
+function finish() {
+  let final = randomNumber();
+
+  numberEl.innerText = formatNumber(final);
+  numberEl.style.color = "#00e5ff";
+  numberEl.style.transform = "scale(1.7)";
+
+  // flash
+  document.body.style.background = "#222";
+  setTimeout(() => document.body.style.background = "#111", 120);
+
+  // confetti
+  createConfetti();
+  drawConfetti();
+
+  // sound combo 🔥
+  win.play();
+  setTimeout(() => boom.play(), 300);
+
+  btn.disabled = false;
+}
+
+// ================= CONFETTI =================
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let confettis = [];
+
+function createConfetti() {
+  confettis = [];
+  for (let i = 0; i < 200; i++) {
+    confettis.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      size: Math.random() * 8 + 4,
+      speed: Math.random() * 3 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      angle: Math.random() * 360
+    });
+  }
+}
+
+function drawConfetti() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  confettis.forEach(c => {
+    c.y += c.speed;
+    c.x += Math.sin(c.angle * Math.PI / 180);
+    c.angle += 5;
+
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.angle * Math.PI / 180);
+
+    ctx.fillStyle = c.color;
+    ctx.fillRect(-c.size/2, -c.size/2, c.size, c.size);
+
+    ctx.restore();
+  });
+
+  confettis = confettis.filter(c => c.y < canvas.height);
+
+  if (confettis.length > 0) {
+    requestAnimationFrame(drawConfetti);
+  }
+}
+
+// responsive
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
